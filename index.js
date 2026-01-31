@@ -1,6 +1,7 @@
 const express = require("express");
 const axios = require("axios");
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
@@ -147,4 +148,4 @@ async function replyMessage(replyToken, text, quickReplies = null) {
   );
 }
 
-app.listen(3000, () => console.log("🚀 サーバー起動中"));
+app.listen(3000, () => console.log("🚀 サーバー起動中: ${PORT}"));

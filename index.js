@@ -1,8 +1,11 @@
+// 環境変数にチャネルアクセストークンを入れるのがベスト
 const LINE_ACCESS_TOKEN = "{XbtVgr4JfayHVe9SBGM5I6h0sa4ujuxXLBka9bh/gYWDrA9ZD9fDT6PYHGTRxqHUKpp32crnyaMCTqTjUGNyyQstmxUZqggKGe1nZbXgTsYePmcT2zFL8r49eJwJOW0SXGmC1cEeQlXSPA3rty1AVgdB04t89/1O/w1cDnyilFU=}";
 
+// ユーザーごとの状態管理
 let currentStep = {};
 let reservationData = {};
 
+// LINEに返信する関数（axiosは不要、fetchでOK）
 async function replyMessage(replyToken, text, quickReplies = null) {
   const message = { type: "text", text };
   if (quickReplies) message.quickReply = { items: quickReplies };
@@ -17,6 +20,7 @@ async function replyMessage(replyToken, text, quickReplies = null) {
   });
 }
 
+// 確認メッセージ
 async function sendConfirm(replyToken, d) {
   await replyMessage(
     replyToken,
@@ -34,6 +38,7 @@ async function sendConfirm(replyToken, d) {
   );
 }
 
+// Workerの入口
 addEventListener("fetch", (event) => {
   event.respondWith(handleRequest(event.request));
 });
@@ -48,13 +53,18 @@ async function handleRequest(request) {
     const userId = event.source.userId;
     const text = event.message.text;
 
+    // ===== キャンセル =====
     if (currentStep[userId] && text === "キャンセル") {
       currentStep[userId] = null;
       reservationData[userId] = null;
-      await replyMessage(replyToken, "予約の入力をキャンセルしました。\nまたご利用の際は「ご予約」と送ってください。");
+      await replyMessage(
+        replyToken,
+        "予約の入力をキャンセルしました。\nまたご利用の際は「ご予約」と送ってください。"
+      );
       return new Response("OK");
     }
 
+    // ===== 開始 =====
     if (!currentStep[userId] && (text === "ご予約" || text === "予約")) {
       currentStep[userId] = "askName";
       reservationData[userId] = {};
@@ -64,7 +74,7 @@ async function handleRequest(request) {
 
     if (!currentStep[userId]) return new Response("OK");
 
-    // フロー
+    // ===== フロー =====
     if (currentStep[userId] === "askName") {
       reservationData[userId].name = text;
       currentStep[userId] = "askPhone";
@@ -96,7 +106,10 @@ async function handleRequest(request) {
       await sendConfirm(replyToken, reservationData[userId]);
     } else if (currentStep[userId] === "confirm") {
       if (text === "はい") {
-        await replyMessage(replyToken, "ご予約内容を受け付けました。\nただいまお店で商品のご用意状況を確認しております。\n確認ができ次第、担当者より改めてご連絡いたします。");
+        await replyMessage(
+          replyToken,
+          "ご予約内容を受け付けました。\nただいまお店で商品のご用意状況を確認しております。\n確認ができ次第、担当者より改めてご連絡いたします。"
+        );
         currentStep[userId] = null;
       } else {
         currentStep[userId] = "selectEdit";
@@ -106,8 +119,8 @@ async function handleRequest(request) {
             { type: "action", action: { type: "message", label: "電話番号", text: "phone" } },
             { type: "action", action: { type: "message", label: "商品", text: "product" } },
             { type: "action", action: { type: "message", label: "受け取り日時", text: "datetime" } },
-            { type: "action", action: { type: "message", label: "キャンセル", text: "キャンセル" } ],
-        );
+            { type: "action", action: { type: "message", label: "キャンセル", text: "キャンセル" } ]
+          );
       }
     } else if (currentStep[userId] === "selectEdit") {
       const map = {
@@ -121,6 +134,7 @@ async function handleRequest(request) {
     }
 
     return new Response("OK");
+
   } catch (err) {
     console.error(err);
     return new Response("Error", { status: 500 });

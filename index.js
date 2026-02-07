@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // 環境変数にチャネルアクセストークンを入れるのがベスト
-const LINE_ACCESS_TOKEN = "{チャネルアクセストークンをここに}";
+const LINE_ACCESS_TOKEN = "{XbtVgr4JfayHVe9SBGM5I6h0sa4ujuxXLBka9bh/gYWDrA9ZD9fDT6PYHGTRxqHUKpp32crnyaMCTqTjUGNyyQstmxUZqggKGe1nZbXgTsYePmcT2zFL8r49eJwJOW0SXGmC1cEeQlXSPA3rty1AVgdB04t89/1O/w1cDnyilFU=}";
 
 // ユーザーごとの状態管理
 let currentStep = {};

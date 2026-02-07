@@ -1,5 +1,3 @@
-import axios from "axios";
-
 // 環境変数にチャネルアクセストークンを入れるのがベスト
 const LINE_ACCESS_TOKEN = "{XbtVgr4JfayHVe9SBGM5I6h0sa4ujuxXLBka9bh/gYWDrA9ZD9fDT6PYHGTRxqHUKpp32crnyaMCTqTjUGNyyQstmxUZqggKGe1nZbXgTsYePmcT2zFL8r49eJwJOW0SXGmC1cEeQlXSPA3rty1AVgdB04t89/1O/w1cDnyilFU=}";
 
@@ -7,16 +5,19 @@ const LINE_ACCESS_TOKEN = "{XbtVgr4JfayHVe9SBGM5I6h0sa4ujuxXLBka9bh/gYWDrA9ZD9fD
 let currentStep = {};
 let reservationData = {};
 
-// LINEに返信する関数
+// LINEに返信する関数（axiosをやめてfetchを使用）
 async function replyMessage(replyToken, text, quickReplies = null) {
   const message = { type: "text", text };
   if (quickReplies) message.quickReply = { items: quickReplies };
 
-  await axios.post(
-    "https://api.line.me/v2/bot/message/reply",
-    { replyToken, messages: [message] },
-    { headers: { Authorization: `Bearer ${LINE_ACCESS_TOKEN}` } }
-  );
+  await fetch("https://api.line.me/v2/bot/message/reply", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${LINE_ACCESS_TOKEN}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ replyToken, messages: [message] })
+  });
 }
 
 // 確認メッセージ
